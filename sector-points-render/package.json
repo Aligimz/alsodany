@@ -1,0 +1,10 @@
+{
+  "name": "sector-points",
+  "version": "1.0.0",
+  "private": true,
+  "description": "سجل نقاط القطاعات الأمنية",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "express": "^4.21.2", "pg": "^8.13.1" }
+}

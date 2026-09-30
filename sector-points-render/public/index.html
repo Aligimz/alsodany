@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>سجل نقاط القطاعات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@600;700&display=swap">
+<style>
+/* Layout: ops-board — weekly standings table on top, entry forms beside the log below */
+:root{
+  --bg:#eef1ee; --panel:#ffffff; --ink:#18221d; --muted:#5d6b63; --line:#d3dbd5;
+  --accent:#2f5d46; --accent-ink:#ffffff; --soft:#e2ebe5;
+  --good:#1f7a4a; --good-bg:#dff2e6; --bad:#b3261e; --bad-bg:#fbe3e1; --warn:#8a5a00; --warn-bg:#fdf0d2;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111713; --panel:#18201b; --ink:#e4ebe6; --muted:#9aa89f; --line:#2c3831;
+  --accent:#6fb18c; --accent-ink:#0d1510; --soft:#1f2b24;
+  --good:#7fd3a0; --good-bg:#16301f; --bad:#f2958d; --bad-bg:#3a1a18; --warn:#f0c46b; --warn-bg:#352a10; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111713; --panel:#18201b; --ink:#e4ebe6; --muted:#9aa89f; --line:#2c3831;
+  --accent:#6fb18c; --accent-ink:#0d1510; --soft:#1f2b24;
+  --good:#7fd3a0; --good-bg:#16301f; --bad:#f2958d; --bad-bg:#3a1a18; --warn:#f0c46b; --warn-bg:#352a10; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+img{max-width:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;direction:rtl}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:grid;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-size:1.9rem;margin:0;line-height:1.2;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0;font-size:.9rem}
+h2{font-family:var(--f-display);font-size:1.2rem;margin:0 0 12px}
+.weekbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px}
+.weekbar b{min-width:170px;text-align:center;font-variant-numeric:tabular-nums;font-size:.95rem}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.danger{color:var(--bad)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.rules{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-radius:999px;padding:3px 12px;font-size:.85rem}
+.chip b{font-variant-numeric:tabular-nums}
+.tablebox{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.8rem;color:var(--muted);font-weight:600;letter-spacing:.02em}
+td.name{text-align:right;font-weight:600}
+td.total{font-weight:700;font-size:1.05rem}
+.rank{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--soft);font-weight:700;font-size:.85rem}
+tr.first .rank{background:var(--accent);color:var(--accent-ink)}
+.neg{color:var(--bad)} .pos{color:var(--good)}
+.qa{display:flex;gap:4px;justify-content:center}
+.qa button{padding:2px 8px;font-size:.8rem}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+form{display:grid;gap:12px}
+label{display:grid;gap:4px;font-size:.88rem;color:var(--muted)}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:100%}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.checks{display:grid;gap:6px;background:var(--soft);border-radius:10px;padding:12px}
+.checks label{display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:.9rem}
+.checks input{width:auto;margin-top:5px}
+.verdict{border-radius:8px;padding:8px 12px;font-size:.9rem}
+.verdict.ok{background:var(--good-bg);color:var(--good)}
+.verdict.no{background:var(--bad-bg);color:var(--bad)}
+.rep td{padding:6px}
+.rep select,.rep input{padding:4px 6px}
+.log{display:grid;gap:8px;max-height:640px;overflow-y:auto}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.pts{font-weight:700;font-variant-numeric:tabular-nums;min-width:48px;text-align:center;border-radius:8px;padding:2px 6px}
+.pts.pos{background:var(--good-bg)} .pts.neg{background:var(--bad-bg)} .pts.zero{background:var(--warn-bg);color:var(--warn)}
+.item small{color:var(--muted);display:block}
+.item .x{border:none;background:none;color:var(--muted);padding:4px 8px}
+.item .x:hover{color:var(--bad)}
+.empty{color:var(--muted);text-align:center;padding:24px;border:1px dashed var(--line);border-radius:10px}
+.note{font-size:.85rem;color:var(--muted)}
+.toast{position:fixed;inset-inline:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));margin:auto;width:max-content;max-width:calc(100% - 32px);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:.9rem}
+.status{font-size:.8rem;color:var(--muted)}
+.status.off{color:var(--warn)}
+@media (prefers-reduced-motion:no-preference){.toast{transition:opacity .2s}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>سجل نقاط القطاعات الأمنية</h1>
+      <p class="sub">إضافة وخصم النقاط على مدار الأسبوع (السبت – الجمعة) · <span id="status" class="status">جارٍ الاتصال…</span></p>
+    </div>
+    <div class="weekbar" role="group" aria-label="اختيار الأسبوع">
+      <button id="prevW" aria-label="الأسبوع السابق">→</button>
+      <b id="weekLabel"></b>
+      <button id="nextW" aria-label="الأسبوع التالي">←</button>
+      <button id="thisW">هذا الأسبوع</button>
+      <button id="lockBtn" hidden>دخول المسؤول</button>
+    </div>
+  </header>
+
+  <section id="loginBox" class="panel" hidden>
+    <form id="loginForm" class="row" style="align-items:end">
+      <label>كلمة مرور المسؤول (للإضافة والخصم والحذف)<input id="pw" type="password" autocomplete="current-password" required></label>
+      <button class="primary" type="submit">دخول</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="rules">
+      <span class="chip">سيناريو <b>+10</b></span>
+      <span class="chip">زيارة <b>+30</b></span>
+      <span class="chip">حالة مقبولة <b>+10</b></span>
+      <span class="chip">لقطتين / صورة شخصية / صورة داخل القطاع = <b>مهملة</b></span>
+      <span class="chip">الصورة لازم تضم كل القطاعات</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>جدول الأسبوع</h2>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>الترتيب</th><th style="text-align:right">القطاع</th><th>سيناريو</th><th>زيارة</th><th>حالات</th><th>إضافة</th><th>خصم</th><th>المجموع</th><th>إضافة سريعة</th></tr></thead>
+        <tbody id="board"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="grid2">
+    <section class="panel">
+      <div class="tabs" role="tablist">
+        <button role="tab" data-tab="entry" aria-selected="true">إضافة / خصم نقاط</button>
+        <button role="tab" data-tab="report" aria-selected="false">تقرير الأمن الوطني</button>
+      </div>
+
+      <form id="entryForm">
+        <div class="row">
+          <label>القطاع<select id="eSector" required></select></label>
+          <label>النوع<select id="eKind"></select></label>
+        </div>
+        <div class="row">
+          <label>النقاط<input id="ePoints" type="number" step="1" required></label>
+          <label>التاريخ<input id="eDate" type="date" required></label>
+        </div>
+        <div id="caseChecks" class="checks" hidden>
+          <strong style="font-size:.9rem">شروط قبول الحالة</strong>
+          <label><input type="checkbox" id="c1"> الصورة مأخوذة داخل السيناريو</label>
+          <label><input type="checkbox" id="c2"> منشورة في إنجازات القوات الأمنية</label>
+          <label><input type="checkbox" id="c3"> لقطة واحدة فقط (مو لقطتين)</label>
+          <label><input type="checkbox" id="c4"> الصورة تضم كل القطاعات</label>
+          <label><input type="checkbox" id="c5"> ليست صورة شخصية</label>
+          <label><input type="checkbox" id="c6"> ليست صورة داخل القطاع بين أفراده</label>
+          <div id="caseVerdict" class="verdict no"></div>
+        </div>
+        <label>ملاحظة<input id="eNote" type="text" placeholder="مثال: سيناريو منطقة الكرادة"></label>
+        <button class="primary" type="submit">حفظ</button>
+      </form>
+
+      <form id="reportForm" hidden>
+        <p class="note">التقرير لازم يشمل كل القطاعات. كل قطاع حاضر وكمّل السيناريو يأخذ +10 تلقائياً.</p>
+        <div class="row">
+          <label>اسم السيناريو<input id="rName" type="text" required placeholder="مثال: سيناريو تحرير رهائن"></label>
+          <label>التاريخ<input id="rDate" type="date" required></label>
+        </div>
+        <div class="tablebox rep">
+          <table>
+            <thead><tr><th style="text-align:right">القطاع</th><th>الحضور</th><th>العدد</th><th>السيناريو</th></tr></thead>
+            <tbody id="repRows"></tbody>
+          </table>
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" id="r1"> صورة التقرير تضم كل القطاعات</label>
+          <label><input type="checkbox" id="r2"> منشور في إنجازات القوات الأمنية</label>
+        </div>
+        <div id="repVerdict" class="verdict no"></div>
+        <button class="primary" type="submit">حفظ التقرير وتوزيع النقاط</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>سجل الأسبوع</h2>
+      <div class="row" style="margin-bottom:12px">
+        <label>تصفية حسب القطاع<select id="fSector"><option value="">كل القطاعات</option></select></label>
+      </div>
+      <div id="log" class="log"></div>
+    </section>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const SECTORS=[
+  {id:"interior",name:"الداخلية"},
+  {id:"nsa",name:"الأمن الوطني"},
+  {id:"ct",name:"مكافحة الإرهاب"},
+  {id:"intel",name:"المخابرات"},
+  {id:"defense",name:"الدفاع"},
+  {id:"bgdops",name:"عمليات بغداد"},
+  {id:"sf",name:"القوات الخاصة"},
+  {id:"rapid",name:"الرد السريع"}
+];
+const KINDS={
+  scenario:{name:"سيناريو",pts:10,col:"scenario"},
+  visit:{name:"زيارة",pts:30,col:"visit"},
+  case:{name:"حالة",pts:10,col:"case"},
+  bonus:{name:"إضافة يدوية",pts:5,col:"bonus"},
+  penalty:{name:"خصم نقاط",pts:-10,col:"penalty"}
+};
+const CASE_REASONS={c1:"مو داخل السيناريو",c2:"غير منشورة بالإنجازات",c3:"أكثر من لقطة",c4:"ما تضم كل القطاعات",c5:"صورة شخصية",c6:"صورة داخل القطاع"};
+const $=s=>document.querySelector(s);
+const sName=id=>(SECTORS.find(s=>s.id===id)||{}).name||id;
+
+// ---- dates (week = Saturday..Friday) ----
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+function weekStart(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());const back=(x.getDay()+1)%7;x.setDate(x.getDate()-back);return x}
+let week=iso(weekStart(new Date()));
+function weekLabel(){const s=parse(week),e=new Date(s);e.setDate(e.getDate()+6);const f=d=>d.getDate()+"/"+(d.getMonth()+1);return "أسبوع "+f(s)+" – "+f(e)+" "+e.getFullYear()}
+
+// ---- store (server API) ----
+let entries=[], reports=[], pollT=null, loadSeq=0;
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+function getPw(){try{return localStorage.getItem("sp_pw")||""}catch(e){return ""}}
+function setPw(v){try{v?localStorage.setItem("sp_pw",v):localStorage.removeItem("sp_pw")}catch(e){}}
+async function api(method,url,body){
+  const r=await fetch(url,{method,headers:{"Content-Type":"application/json","x-admin-password":getPw()},body:body?JSON.stringify(body):undefined});
+  const j=await r.json().catch(()=>({}));
+  if(r.status===401){showLogin(true);throw new Error("ادخل كلمة المرور أولاً")}
+  if(!r.ok)throw new Error(j.error||"خطأ "+r.status);
+  return j;
+}
+async function load(){
+  const seq=++loadSeq,w=week;
+  try{const d=await api("GET","/api/week/"+w);if(seq!==loadSeq)return;entries=d.entries;reports=d.reports;render();setStatus(true)}
+  catch(e){if(seq===loadSeq)setStatus(false)}
+}
+function subscribe(){render();load();clearInterval(pollT);pollT=setInterval(()=>{if(!document.hidden)load()},20000)}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)load()});
+function setStatus(ok){const st=$("#status");st.textContent=ok?"متصل · يتحدث كل 20 ثانية":"تعذر الاتصال بالخادم";st.classList.toggle("off",!ok)}
+async function addEntry(e){await api("POST","/api/entries",e);await load()}
+async function removeEntry(id){await api("DELETE","/api/entries/"+encodeURIComponent(id));await load()}
+async function addReport(r){await api("POST","/api/reports",r);await load()}
+async function removeReport(id){await api("DELETE","/api/reports/"+encodeURIComponent(id));await load()}
+
+// ---- login ----
+let locked=false;
+function showLogin(v){$("#loginBox").hidden=!v}
+function syncLock(){const has=!!getPw();$("#lockBtn").hidden=!locked;$("#lockBtn").textContent=has?"تسجيل خروج":"دخول المسؤول"}
+$("#lockBtn").addEventListener("click",()=>{if(getPw()){setPw("");syncLock();toast("انسجل الخروج")}else showLogin(true)});
+$("#loginForm").addEventListener("submit",async ev=>{ev.preventDefault();const v=$("#pw").value;setPw(v);
+  try{await api("POST","/api/login");showLogin(false);$("#pw").value="";toast("تم الدخول");syncLock()}
+  catch(e){setPw("");syncLock();toast("كلمة المرور غير صحيحة")}});
+
+// ---- render ----
+function render(){
+  $("#weekLabel").textContent=weekLabel();
+  const tot={};SECTORS.forEach(s=>tot[s.id]={scenario:0,visit:0,case:0,bonus:0,penalty:0,total:0});
+  entries.forEach(e=>{const t=tot[e.sector];if(!t||e.status==="rejected")return;const col=(KINDS[e.kind]||{}).col||"bonus";
+    if(e.points<0){t.penalty+=e.points}else{t[col==="penalty"?"bonus":col]+=e.points}t.total+=e.points});
+  const order=[...SECTORS].sort((a,b)=>tot[b.id].total-tot[a.id].total);
+  let rank=0,prev=null;
+  $("#board").innerHTML=order.map((s,i)=>{const t=tot[s.id];if(t.total!==prev){rank=i+1;prev=t.total}
+    return `<tr class="${rank===1&&t.total>0?"first":""}"><td><span class="rank">${rank}</span></td><td class="name">${s.name}</td>
+    <td>${t.scenario}</td><td>${t.visit}</td><td>${t.case}</td><td class="pos">${t.bonus?"+"+t.bonus:0}</td><td class="neg">${t.penalty}</td>
+    <td class="total ${t.total<0?"neg":""}">${t.total}</td>
+    <td><div class="qa"><button data-q="scenario" data-s="${s.id}" title="سيناريو +10">سيناريو</button><button data-q="visit" data-s="${s.id}" title="زيارة +30">زيارة</button><button data-q="minus" data-s="${s.id}" class="danger" title="خصم 10">−10</button></div></td></tr>`}).join("");
+  // log
+  const f=$("#fSector").value;
+  const items=[...entries.filter(e=>!f||e.sector===f).map(e=>({t:"e",at:e.createdAt,...e})),
+               ...(f?[]:reports.map(r=>({t:"r",at:r.createdAt,...r})))].sort((a,b)=>b.at-a.at);
+  const log=$("#log");
+  if(!items.length){log.innerHTML=`<div class="empty">ما في نقاط مسجلة لهذا الأسبوع بعد. استخدم نموذج الإضافة أو أزرار الإضافة السريعة بالجدول.</div>`;return}
+  log.innerHTML=items.map(it=>{
+    if(it.t==="r"){const pres=it.rows.filter(r=>r.present).length,done=it.rows.filter(r=>r.present&&r.completed).length;
+      return `<div class="item"><span class="pts pos">تقرير</span><div><b>${esc(it.name)}</b><small>${it.day} · حاضر ${pres}/${it.rows.length} · كمّل ${done} · ${it.rows.filter(r=>!r.present).map(r=>sName(r.sector)).join("، ")||"لا غياب"}${it.rows.some(r=>!r.present)?" (غائب)":""}</small></div><button class="x" data-dr="${it.id}" aria-label="حذف التقرير">حذف</button></div>`}
+    const rej=it.status==="rejected";const cls=rej?"zero":it.points<0?"neg":"pos";
+    return `<div class="item"><span class="pts ${cls}">${rej?"مهملة":(it.points>0?"+":"")+it.points}</span><div><b>${sName(it.sector)}</b> · ${(KINDS[it.kind]||{}).name||""}<small>${it.day}${it.note?" · "+esc(it.note):""}${rej&&it.reasons?" · السبب: "+it.reasons.join("، "):""}</small></div><button class="x" data-de="${it.id}" aria-label="حذف">حذف</button></div>`}).join("");
+}
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+// ---- entry form ----
+const today=iso(new Date());
+SECTORS.forEach(s=>{$("#eSector").add(new Option(s.name,s.id));$("#fSector").add(new Option(s.name,s.id))});
+Object.entries(KINDS).forEach(([k,v])=>$("#eKind").add(new Option(v.name+" ("+(v.pts>0?"+":"")+v.pts+")",k)));
+$("#eDate").value=today;$("#rDate").value=today;
+function syncKind(){const k=$("#eKind").value;$("#ePoints").value=KINDS[k].pts;$("#caseChecks").hidden=k!=="case";$("#ePoints").readOnly=(k==="scenario"||k==="visit"||k==="case");syncCase()}
+function caseFails(){return Object.keys(CASE_REASONS).filter(k=>!$("#"+k).checked).map(k=>CASE_REASONS[k])}
+function syncCase(){const f=caseFails(),v=$("#caseVerdict");if(!f.length){v.className="verdict ok";v.textContent="الحالة مقبولة: +10"}else{v.className="verdict no";v.textContent="الحالة مهملة (0 نقاط): "+f.join("، ")}}
+$("#eKind").addEventListener("change",syncKind);
+document.querySelectorAll("#caseChecks input").forEach(i=>i.addEventListener("change",syncCase));
+syncKind();
+$("#entryForm").addEventListener("submit",async ev=>{ev.preventDefault();
+  const k=$("#eKind").value;let pts=Number($("#ePoints").value)||0;if(k==="penalty")pts=-Math.abs(pts);if(k==="bonus")pts=Math.abs(pts);
+  const e={sector:$("#eSector").value,kind:k,points:pts,day:$("#eDate").value,note:$("#eNote").value.trim(),status:"accepted"};
+  if(k==="case"){const f=caseFails();if(f.length){e.status="rejected";e.points=0;e.reasons=f}}
+  try{await addEntry(e);toast(e.status==="rejected"?"انحفظت الحالة كمهملة":"انحفظت النقاط");$("#eNote").value="";document.querySelectorAll("#caseChecks input").forEach(i=>i.checked=false);syncCase()}
+  catch(err){toast("ما انحفظ: "+(err&&err.message||"حاول مرة ثانية"))}
+});
+$("#board").addEventListener("click",async ev=>{const b=ev.target.closest("button[data-q]");if(!b)return;const q=b.dataset.q;
+  const e={sector:b.dataset.s,kind:q==="minus"?"penalty":q,points:q==="minus"?-10:KINDS[q].pts,day:today,note:"إضافة سريعة",status:"accepted"};
+  if(parse(today)<parse(week)||weekStart(parse(today)).getTime()!==parse(week).getTime())e.day=week;
+  try{await addEntry(e);toast(sName(e.sector)+": "+(e.points>0?"+":"")+e.points)}catch(err){toast("ما انحفظ: "+err.message)}
+});
+$("#log").addEventListener("click",async ev=>{const de=ev.target.closest("[data-de]"),dr=ev.target.closest("[data-dr]");
+  const b=de||dr;if(!b)return;
+  if(b.dataset.arm!=="1"){b.dataset.arm="1";b.textContent="تأكيد؟";setTimeout(()=>{b.dataset.arm="";b.textContent="حذف"},3000);return}
+  try{if(de)await removeEntry(de.dataset.de);else await removeReport(dr.dataset.dr);toast("انحذف")}catch(err){toast("ما انحذف: "+err.message)}
+});
+$("#fSector").addEventListener("change",render);
+
+// ---- report form ----
+$("#repRows").innerHTML=SECTORS.map(s=>`<tr data-s="${s.id}"><td class="name">${s.name}</td>
+  <td><select class="rp"><option value="">— اختر —</option><option value="1">حاضر</option><option value="0">غائب</option></select></td>
+  <td><input class="rc" type="number" min="0" style="width:80px" aria-label="العدد"></td>
+  <td><select class="rd"><option value="1">كمّل</option><option value="0">راح قبل النهاية</option></select></td></tr>`).join("");
+function repState(){
+  const rows=[...document.querySelectorAll("#repRows tr")].map(tr=>({sector:tr.dataset.s,p:tr.querySelector(".rp").value,count:Number(tr.querySelector(".rc").value)||0,completed:tr.querySelector(".rd").value==="1"}));
+  rows.forEach(r=>{const tr=document.querySelector(`#repRows tr[data-s="${r.sector}"]`);const off=r.p!=="1";tr.querySelector(".rc").disabled=off;tr.querySelector(".rd").disabled=off});
+  const missing=rows.filter(r=>r.p==="").map(r=>sName(r.sector));const noCount=rows.filter(r=>r.p==="1"&&!r.count).map(r=>sName(r.sector));
+  const probs=[];if(missing.length)probs.push("باقي قطاعات بدون حضور/غياب: "+missing.join("، "));if(noCount.length)probs.push("اكتب العدد لـ: "+noCount.join("، "));
+  if(!$("#r1").checked)probs.push("الصورة لازم تضم كل القطاعات");if(!$("#r2").checked)probs.push("لازم ينشر بإنجازات القوات الأمنية");
+  const v=$("#repVerdict");const earn=rows.filter(r=>r.p==="1"&&r.completed).length;
+  if(probs.length){v.className="verdict no";v.textContent="التقرير ناقص: "+probs.join(" · ")}else{v.className="verdict ok";v.textContent="التقرير كامل · "+earn+" قطاع ياخذ +10"}
+  return {rows:rows.map(r=>({sector:r.sector,present:r.p==="1",count:r.p==="1"?r.count:0,completed:r.p==="1"&&r.completed})),ok:!probs.length};
+}
+$("#reportForm").addEventListener("input",repState);$("#reportForm").addEventListener("change",repState);repState();
+$("#reportForm").addEventListener("submit",async ev=>{ev.preventDefault();const st=repState();
+  if(!st.ok){toast("كمّل التقرير لكل القطاعات أولاً");return}
+  try{await addReport({name:$("#rName").value.trim(),day:$("#rDate").value,rows:st.rows,photoAllSectors:$("#r1").checked,published:$("#r2").checked});toast("انحفظ التقرير ووزعت النقاط");
+    $("#reportForm").reset();$("#rDate").value=today;repState()}catch(err){toast("ما انحفظ التقرير: "+err.message)}
+});
+
+// tabs
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-selected",x===b));
+  $("#entryForm").hidden=b.dataset.tab!=="entry";$("#reportForm").hidden=b.dataset.tab!=="report"}));
+
+// week nav
+function shift(n){const d=parse(week);d.setDate(d.getDate()+7*n);week=iso(d);subscribe()}
+$("#prevW").onclick=()=>shift(-1);$("#nextW").onclick=()=>shift(1);$("#thisW").onclick=()=>{week=iso(weekStart(new Date()));subscribe()};
+
+render();
+fetch("/api/config").then(r=>r.json()).then(c=>{locked=!!c.locked;syncLock()}).catch(()=>{});
+subscribe();
+</script>
+</body>
+</html>
